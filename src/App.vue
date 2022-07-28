@@ -1,26 +1,36 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <router-view v-slot="{ Component }">
+    <keep-alive>
+      <component :is="Component" />
+    </keep-alive>
+  </router-view>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
-
+import * as MutationType from "@/MutationType"
 export default {
   name: 'App',
-  components: {
-    HelloWorld
+  mounted () {
+    this.authGates()
+  },
+  methods: {
+    authGates () {
+      let user = localStorage.getItem("user");
+      if (user && user != "undefined" && Object.keys(user).length > 0) {
+        let auth = JSON.parse(user);
+        this.$store.commit(
+          "auth/" + MutationType.SET_ACCESS_TOKEN,
+          auth.access_token
+        );
+        this.$store.dispatch(
+          "auth/" + MutationType.AUTHENTICATION_UPDATE
+        );
+        this.$store.commit("setFetching", false);
+      } else {
+        this.$message.error("登陆失效!");
+        this.$router.push("login");
+      }
+    },
   }
 }
 </script>
-
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-</style>
